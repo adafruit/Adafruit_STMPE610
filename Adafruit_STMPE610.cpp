@@ -1,3 +1,20 @@
+/*************************************************** 
+  This is a library for the Adafruit STMPE610 Resistive
+  touch screen controller breakout
+  ----> http://www.adafruit.com/products/1571
+ 
+  Check out the links above for our tutorials and wiring diagrams
+  These breakouts use SPI or I2C to communicate
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
+
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
@@ -15,6 +32,7 @@
     @brief  Instantiates a new STMPE610 class
 */
 /**************************************************************************/
+// software SPI
 Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t misopin, uint8_t clkpin) {
   _CS = cspin;
   _MOSI = mosipin;
@@ -22,11 +40,13 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t mis
   _CLK = clkpin;
 }
 
+// hardware SPI
 Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin) {
   _CS = cspin;
   _MOSI = _MISO = _CLK = -1;
 }
 
+// I2C
 Adafruit_STMPE610::Adafruit_STMPE610() {
 // use i2c
   _CS = -1;
