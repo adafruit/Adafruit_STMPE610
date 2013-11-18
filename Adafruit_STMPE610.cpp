@@ -26,6 +26,8 @@
 
 #include "Adafruit_STMPE610.h"
 
+uint8_t SPCRbackup;
+uint8_t mySPCR;
 
 /**************************************************************************/
 /*! 
@@ -64,9 +66,13 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     pinMode(_CS, OUTPUT);
     digitalWrite(_CS, HIGH);
     
+    SPCRbackup = SPCR;
     SPI.begin();
-    SPI.setClockDivider(SPI_CLOCK_DIV8);
+    SPI.setClockDivider(SPI_CLOCK_DIV16);
     SPI.setDataMode(SPI_MODE0);
+    mySPCR = SPCR; // save our preferred state
+    //Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
+    SPCR = SPCRbackup;  // then restore
   } else if (_CS != -1) {
     // software SPI
     pinMode(_CLK, OUTPUT);
@@ -78,9 +84,24 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     _i2caddr = i2caddr;
   }
 
-  if (getVersion() != 0x811)
-    return false;
-  
+  // try mode0
+  if (getVersion() != 0x811) {
+    if (_CS != -1 && _CLK == -1) {
+      //Serial.println("try MODE1");
+      SPCRbackup = SPCR;
+      SPI.begin();
+      SPI.setDataMode(SPI_MODE1);
+      SPI.setClockDivider(SPI_CLOCK_DIV16);
+      mySPCR = SPCR; // save our new preferred state
+      //Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
+      SPCR = SPCRbackup;  // then restore
+      if (getVersion() != 0x811) {
+	return false;
+      }
+    } else {
+      return false;
+    }
+  }
   writeRegister8(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET);
   delay(10);
   
@@ -102,7 +123,9 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   writeRegister8(STMPE_TSC_I_DRIVE, STMPE_TSC_I_DRIVE_50MA);
   writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
   writeRegister8(STMPE_INT_CTRL, STMPE_INT_CTRL_POL_HIGH | STMPE_INT_CTRL_ENABLE);
-  
+
+  if (_CS != -1 && _CLK == -1)
+    SPCR = SPCRbackup;  // restore SPI state
 
   return true;
 }
@@ -121,9 +144,11 @@ uint8_t Adafruit_STMPE610::bufferSize(void) {
 
 uint16_t Adafruit_STMPE610::getVersion() {
   uint16_t v;
+  //Serial.print("get version");
   v = readRegister8(0);
   v <<= 8;
   v |= readRegister8(1);
+  //Serial.print("Version: 0x"); Serial.println(v, HEX);
   return v;
 }
 
@@ -157,14 +182,23 @@ TS_Point Adafruit_STMPE610::getPoint(void) {
 }
 
 uint8_t Adafruit_STMPE610::spiIn() {
-  if (_CLK == -1) 
-    return SPI.transfer(0);
+  if (_CLK == -1) {
+    SPCRbackup = SPCR;
+    SPCR = mySPCR;
+    uint8_t d = SPI.transfer(0);
+    SPCR = SPCRbackup;
+    return d;
+  }
   else
     return shiftIn(_MISO, _CLK, MSBFIRST);
 }
 void Adafruit_STMPE610::spiOut(uint8_t x) {  
-  if (_CLK == -1) 
+  if (_CLK == -1) {
+    SPCRbackup = SPCR;
+    SPCR = mySPCR;
     SPI.transfer(x);
+    SPCR = SPCRbackup;
+  }
   else
     shiftOut(_MOSI, _CLK, MSBFIRST, x);
 }
