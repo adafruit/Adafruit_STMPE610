@@ -147,5 +147,7 @@ class Adafruit_STMPE610{
 
   int8_t  _CS, _MOSI, _MISO, _CLK;
   uint8_t _i2caddr;
+    
+  int m_spiMode;
 };
 
