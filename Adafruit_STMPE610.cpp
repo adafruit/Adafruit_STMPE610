@@ -66,6 +66,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     pinMode(_CS, OUTPUT);
     digitalWrite(_CS, HIGH);
     
+#if defined (__AVR__)
     SPCRbackup = SPCR;
     SPI.begin();
     SPI.setClockDivider(SPI_CLOCK_DIV16);
@@ -73,6 +74,11 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     mySPCR = SPCR; // save our preferred state
     //Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
     SPCR = SPCRbackup;  // then restore
+#elif defined (__arm__)
+    SPI.setClockDivider(84);
+    SPI.setDataMode(SPI_MODE0);
+#endif
+    m_spiMode = SPI_MODE0;
   } else if (_CS != -1) {
     // software SPI
     pinMode(_CLK, OUTPUT);
@@ -88,6 +94,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   if (getVersion() != 0x811) {
     if (_CS != -1 && _CLK == -1) {
       //Serial.println("try MODE1");
+#if defined (__AVR__)
       SPCRbackup = SPCR;
       SPI.begin();
       SPI.setDataMode(SPI_MODE1);
@@ -95,8 +102,14 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
       mySPCR = SPCR; // save our new preferred state
       //Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
       SPCR = SPCRbackup;  // then restore
+#elif defined (__arm__)
+      SPI.setClockDivider(84);
+      SPI.setDataMode(SPI_MODE1);
+#endif
+      m_spiMode = SPI_MODE1;
+        
       if (getVersion() != 0x811) {
-	return false;
+	    return false;
       }
     } else {
       return false;
@@ -124,9 +137,10 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
   writeRegister8(STMPE_INT_CTRL, STMPE_INT_CTRL_POL_HIGH | STMPE_INT_CTRL_ENABLE);
 
-  if (_CS != -1 && _CLK == -1)
+#if defined (__AVR__)
+    if (_CS != -1 && _CLK == -1)
     SPCR = SPCRbackup;  // restore SPI state
-
+#endif
   return true;
 }
 
@@ -183,21 +197,34 @@ TS_Point Adafruit_STMPE610::getPoint(void) {
 
 uint8_t Adafruit_STMPE610::spiIn() {
   if (_CLK == -1) {
+#if defined (__AVR__)
     SPCRbackup = SPCR;
     SPCR = mySPCR;
     uint8_t d = SPI.transfer(0);
     SPCR = SPCRbackup;
     return d;
+#elif defined (__arm__)
+    SPI.setClockDivider(84);
+    SPI.setDataMode(m_spiMode);
+    uint8_t d = SPI.transfer(0);
+    return d;
+#endif
   }
   else
     return shiftIn(_MISO, _CLK, MSBFIRST);
 }
 void Adafruit_STMPE610::spiOut(uint8_t x) {  
   if (_CLK == -1) {
+#if defined (__AVR__)
     SPCRbackup = SPCR;
     SPCR = mySPCR;
     SPI.transfer(x);
     SPCR = SPCRbackup;
+#elif defined (__arm__)
+    SPI.setClockDivider(84);
+    SPI.setDataMode(m_spiMode);
+    SPI.transfer(x);
+#endif
   }
   else
     shiftOut(_MOSI, _CLK, MSBFIRST, x);
