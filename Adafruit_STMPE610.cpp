@@ -115,7 +115,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   writeRegister8(STMPE_INT_EN, STMPE_INT_EN_TOUCHDET);
   writeRegister8(STMPE_ADC_CTRL1, STMPE_ADC_CTRL1_10BIT | (0x6 << 4)); // 96 clocks per conversion
   writeRegister8(STMPE_ADC_CTRL2, STMPE_ADC_CTRL2_6_5MHZ);
-  writeRegister8(STMPE_TSC_CFG, STMPE_TSC_CFG_2SAMPLE | STMPE_TSC_CFG_DELAY_1MS | STMPE_TSC_CFG_SETTLE_5MS);
+  writeRegister8(STMPE_TSC_CFG, STMPE_TSC_CFG_4SAMPLE | STMPE_TSC_CFG_DELAY_1MS | STMPE_TSC_CFG_SETTLE_5MS);
   writeRegister8(STMPE_TSC_FRACTION_Z, 0x6);
   writeRegister8(STMPE_FIFO_TH, 1);
   writeRegister8(STMPE_FIFO_STA, STMPE_FIFO_STA_RESET);
@@ -131,7 +131,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
 }
 
 boolean Adafruit_STMPE610::touched(void) {
-  return (readRegister8(STMPE_TSC_CTRL) & 0x80 == 0x80);
+  return (readRegister8(STMPE_TSC_CTRL) & 0x80);
 }
 
 boolean Adafruit_STMPE610::bufferEmpty(void) {
