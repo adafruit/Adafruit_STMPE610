@@ -84,6 +84,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     //Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
     SPCR = SPCRbackup;  // then restore
 #elif defined (__arm__)
+    SPI.begin();
     SPI.setClockDivider(84);
     SPI.setDataMode(SPI_MODE0);
 #endif
