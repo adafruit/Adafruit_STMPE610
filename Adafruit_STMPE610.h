@@ -14,6 +14,8 @@
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
+#ifndef _ADAFRUIT_STMPE610H_
+#define _ADAFRUIT_STMPE610H_
 
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -151,3 +153,4 @@ class Adafruit_STMPE610{
   int m_spiMode;
 };
 
+#endif
