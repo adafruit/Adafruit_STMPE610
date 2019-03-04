@@ -27,6 +27,7 @@
 #include "WProgram.h"
 #endif
 
+#include <SPI.h>
 #include <Wire.h>
 
 /** STMPE610 Address **/
@@ -157,7 +158,10 @@ public:
   Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t misopin,
                     uint8_t clkpin);
   Adafruit_STMPE610(uint8_t cs);
+  Adafruit_STMPE610(TheWire *theWire);
+  Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin, SPIClass *theSPI);
   Adafruit_STMPE610();
+
   boolean begin(uint8_t i2caddr = STMPE_ADDR);
 
   void writeRegister8(uint8_t reg, uint8_t val);
@@ -174,6 +178,8 @@ private:
   uint8_t spiIn();
   void spiOut(uint8_t x);
 
+  TwoWire *_wire;
+  SPIClass *_spi;
   int8_t _CS, _MOSI, _MISO, _CLK;
   uint8_t _i2caddr;
 
