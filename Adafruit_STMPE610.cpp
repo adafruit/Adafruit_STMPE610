@@ -79,7 +79,7 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin) {
  *  @brief  Instantiates a new STMPE610 using provided wire
  *  @param  *theWire
  */
-Adafruit_STMPE610::Adafruit_STMPE610(TheWire *theWire) {
+Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
   _CS = _MISO = _MOSI = _CLK = -1;
   _wire = theWire;
 }

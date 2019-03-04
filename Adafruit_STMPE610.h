@@ -158,7 +158,7 @@ public:
   Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t misopin,
                     uint8_t clkpin);
   Adafruit_STMPE610(uint8_t cs);
-  Adafruit_STMPE610(TheWire *theWire);
+  Adafruit_STMPE610(TwoWire *theWire);
   Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin, SPIClass *theSPI);
   Adafruit_STMPE610();
 
