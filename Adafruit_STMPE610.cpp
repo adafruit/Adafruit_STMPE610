@@ -102,6 +102,7 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin,
 Adafruit_STMPE610::Adafruit_STMPE610() {
   // use i2c
   _CS = -1;
+  _wire = &Wire;
 }
 
 /*!
