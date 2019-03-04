@@ -78,6 +78,7 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin) {
 /*!
  *  @brief  Instantiates a new STMPE610 using provided wire
  *  @param  *theWire
+ *          wire object
  */
 Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
   _CS = _MISO = _MOSI = _CLK = -1;
@@ -87,6 +88,7 @@ Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
 /*!
  *  @brief  Instantiates a new STMPE610 using provided SPI
  *  @param  *theSPI
+ *          spi object
  */
 Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin,
                                      SPIClass *theSPI) {
