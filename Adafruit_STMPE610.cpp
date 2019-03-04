@@ -33,7 +33,7 @@
 #endif
 
 #include <Wire.h>
-#include <_spi->h>
+#include <SPI.h>
 
 #include "Adafruit_STMPE610.h"
 
