@@ -26,28 +26,17 @@
  *  MIT license, all text above must be included in any redistribution
  */
 
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
-#include <Wire.h>
 #include <SPI.h>
+#include <Wire.h>
 
 #include "Adafruit_STMPE610.h"
 
-#if defined(SPI_HAS_TRANSACTION)
-// SPI transaction support allows managing SPI settings and prevents
-// conflicts between libraries, with a hardware-neutral interface
 static SPISettings mySPISettings;
-#elif defined(__AVR__)
-static uint8_t SPCRbackup;
-static uint8_t mySPCR;
-#endif
 
 /*!
- *  @brief  Instantiates a new STMPE610 class
+ *  @brief  Instantiates a new STMPE610 class using bitbang SPI
  *  @param  cspin
  *          CS pin
  *  @param  mosipin
@@ -66,7 +55,7 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin,
 }
 
 /*!
- *  @brief  Instantiates a new STMPE610 class
+ *  @brief  Instantiates a new STMPE610 class using hardware SPI
  *  @param  cspin
  *          CS pin
  */
@@ -119,22 +108,8 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
     pinMode(_CS, OUTPUT);
     digitalWrite(_CS, HIGH);
 
-#if defined(SPI_HAS_TRANSACTION)
     _spi->begin();
     mySPISettings = SPISettings(1000000, MSBFIRST, SPI_MODE0);
-#elif defined(__AVR__)
-    SPCRbackup = SPCR;
-    _spi->begin();
-    _spi->setClockDivider(SPI_CLOCK_DIV16);
-    _spi->setDataMode(SPI_MODE0);
-    mySPCR = SPCR; // save our preferred state
-    // Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
-    SPCR = SPCRbackup; // then restore
-#elif defined(__arm__)
-    _spi->begin();
-    _spi->setClockDivider(84);
-    _spi->setDataMode(SPI_MODE0);
-#endif
     m_spiMode = SPI_MODE0;
   } else if (_CS != -1) {
     // software SPI
@@ -151,20 +126,7 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   if (getVersion() != 0x811) {
     if (_CS != -1 && _CLK == -1) {
       // Serial.println("try MODE1");
-#if defined(SPI_HAS_TRANSACTION)
       mySPISettings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
-#elif defined(__AVR__)
-      SPCRbackup = SPCR;
-      _spi->begin();
-      _spi->setDataMode(SPI_MODE1);
-      _spi->setClockDivider(SPI_CLOCK_DIV16);
-      mySPCR = SPCR; // save our new preferred state
-      // Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
-      SPCR = SPCRbackup; // then restore
-#elif defined(__arm__)
-      _spi->setClockDivider(84);
-      _spi->setDataMode(SPI_MODE1);
-#endif
       m_spiMode = SPI_MODE1;
 
       if (getVersion() != 0x811) {
@@ -201,10 +163,6 @@ boolean Adafruit_STMPE610::begin(uint8_t i2caddr) {
   writeRegister8(STMPE_INT_CTRL,
                  STMPE_INT_CTRL_POL_HIGH | STMPE_INT_CTRL_ENABLE);
 
-#if defined(__AVR__) && !defined(SPI_HAS_TRANSACTION)
-  if (_CS != -1 && _CLK == -1)
-    SPCR = SPCRbackup; // restore SPI state
-#endif
   return true;
 }
 
@@ -217,8 +175,8 @@ boolean Adafruit_STMPE610::touched() {
 }
 
 /*!
- *  @brief  Returns true if touched, false otherwise
- *  @return True if if touched, false otherwise
+ *  @brief  Checks if buffer is empty
+ *  @return True if empty, false otherwise
  */
 boolean Adafruit_STMPE610::bufferEmpty() {
   return (readRegister8(STMPE_FIFO_STA) & STMPE_FIFO_STA_EMPTY);
@@ -290,21 +248,8 @@ TS_Point Adafruit_STMPE610::getPoint() {
  */
 uint8_t Adafruit_STMPE610::spiIn() {
   if (_CLK == -1) {
-#if defined(SPI_HAS_TRANSACTION)
     uint8_t d = _spi->transfer(0);
     return d;
-#elif defined(__AVR__)
-    SPCRbackup = SPCR;
-    SPCR = mySPCR;
-    uint8_t d = _spi->transfer(0);
-    SPCR = SPCRbackup;
-    return d;
-#elif defined(__arm__)
-    _spi->setClockDivider(84);
-    _spi->setDataMode(m_spiMode);
-    uint8_t d = _spi->transfer(0);
-    return d;
-#endif
   } else
     return shiftIn(_MISO, _CLK, MSBFIRST);
 }
@@ -316,24 +261,13 @@ uint8_t Adafruit_STMPE610::spiIn() {
  */
 void Adafruit_STMPE610::spiOut(uint8_t x) {
   if (_CLK == -1) {
-#if defined(SPI_HAS_TRANSACTION)
     _spi->transfer(x);
-#elif defined(__AVR__)
-    SPCRbackup = SPCR;
-    SPCR = mySPCR;
-    _spi->transfer(x);
-    SPCR = SPCRbackup;
-#elif defined(__arm__)
-    _spi->setClockDivider(84);
-    _spi->setDataMode(m_spiMode);
-    _spi->transfer(x);
-#endif
   } else
     shiftOut(_MOSI, _CLK, MSBFIRST, x);
 }
 
 /*!
- *  @brief  Reads data from specified register
+ *  @brief  Reads 8bit of data from specified register
  *  @param  reg
  *          The register
  *  @return Data in the register
@@ -353,26 +287,15 @@ uint8_t Adafruit_STMPE610::readRegister8(uint8_t reg) {
     // Serial.print("$"); Serial.print(reg, HEX);
     // Serial.print(": 0x"); Serial.println(x, HEX);
   } else {
-#if defined(SPI_HAS_TRANSACTION)
     if (_CLK == -1)
       _spi->beginTransaction(mySPISettings);
-#endif
-    digitalWrite(_CS, LOW);
-    spiOut(0x80 | reg);
-    spiOut(0x00);
-    x = spiIn();
-    digitalWrite(_CS, HIGH);
-#if defined(SPI_HAS_TRANSACTION)
-    if (_CLK == -1)
-      _spi->endTransaction();
-#endif
   }
 
   return x;
 }
 
 /*!
- *  @brief  Reads data from specified register
+ *  @brief  Reads 16 bits of data from specified register
  *  @param  reg
  *          The register
  *  @return Data in the register
@@ -392,10 +315,8 @@ uint16_t Adafruit_STMPE610::readRegister16(uint8_t reg) {
   }
   if (_CLK == -1) {
     // hardware SPI
-#if defined(SPI_HAS_TRANSACTION)
     if (_CLK == -1)
       _spi->beginTransaction(mySPISettings);
-#endif
     digitalWrite(_CS, LOW);
     spiOut(0x80 | reg);
     spiOut(0x00);
@@ -403,10 +324,8 @@ uint16_t Adafruit_STMPE610::readRegister16(uint8_t reg) {
     x <<= 8;
     x |= spiIn();
     digitalWrite(_CS, HIGH);
-#if defined(SPI_HAS_TRANSACTION)
     if (_CLK == -1)
       _spi->endTransaction();
-#endif
   }
 
   // Serial.print("$"); Serial.print(reg, HEX);
@@ -415,7 +334,7 @@ uint16_t Adafruit_STMPE610::readRegister16(uint8_t reg) {
 }
 
 /*!
- *  @brief  Writes data to specified register
+ *  @brief  Writes 8 bit of data to specified register
  *  @param  reg
  *	    The register
  *  @param  val
@@ -429,18 +348,14 @@ void Adafruit_STMPE610::writeRegister8(uint8_t reg, uint8_t val) {
     _wire->write(val);
     _wire->endTransmission();
   } else {
-#if defined(SPI_HAS_TRANSACTION)
     if (_CLK == -1)
       _spi->beginTransaction(mySPISettings);
-#endif
     digitalWrite(_CS, LOW);
     spiOut(reg);
     spiOut(val);
     digitalWrite(_CS, HIGH);
-#if defined(SPI_HAS_TRANSACTION)
     if (_CLK == -1)
       _spi->endTransaction();
-#endif
   }
 }
 
