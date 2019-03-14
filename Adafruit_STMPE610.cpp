@@ -227,9 +227,6 @@ void Adafruit_STMPE610::readData(uint16_t *x, uint16_t *y, uint8_t *z) {
   *y <<= 8;
   *y |= data[2];
   *z = data[3];
-
-  if (bufferEmpty())
-    writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
 }
 
 /*!
@@ -239,7 +236,15 @@ void Adafruit_STMPE610::readData(uint16_t *x, uint16_t *y, uint8_t *z) {
 TS_Point Adafruit_STMPE610::getPoint() {
   uint16_t x, y;
   uint8_t z;
-  readData(&x, &y, &z);
+
+  /* Making sure that we are reading all data before leaving */
+  while (!bufferEmpty()) {
+    readData(&x, &y, &z);
+  }
+
+  if (bufferEmpty())
+    writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
+
   return TS_Point(x, y, z);
 }
 
