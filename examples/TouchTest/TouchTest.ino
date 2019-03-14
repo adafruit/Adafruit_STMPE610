@@ -74,7 +74,7 @@ void loop() {
       Serial.print(z);
       Serial.println(")");
     }
-    touch.writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints
+    touch.writeRegister8(STMPE_INT_STA, 0xFF); // reset all ints, in this example unneeded depending in use
   }
   delay(10);
 }
