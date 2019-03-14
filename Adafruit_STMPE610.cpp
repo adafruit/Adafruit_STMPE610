@@ -279,10 +279,8 @@ uint8_t Adafruit_STMPE610::readRegister8(uint8_t reg) {
     _wire->beginTransmission(_i2caddr);
     _wire->write((byte)reg);
     _wire->endTransmission();
-    _wire->beginTransmission(_i2caddr);
     _wire->requestFrom(_i2caddr, (byte)1);
     x = _wire->read();
-    _wire->endTransmission();
 
     // Serial.print("$"); Serial.print(reg, HEX);
     // Serial.print(": 0x"); Serial.println(x, HEX);
@@ -320,7 +318,6 @@ uint16_t Adafruit_STMPE610::readRegister16(uint8_t reg) {
     x = _wire->read();
     x <<= 8;
     x |= _wire->read();
-    _wire->endTransmission();
   }
   if (_CLK == -1) {
     // hardware SPI
