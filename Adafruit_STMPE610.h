@@ -21,11 +21,7 @@
 #ifndef _ADAFRUIT_STMPE610H_
 #define _ADAFRUIT_STMPE610H_
 
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
 #include <SPI.h>
 #include <Wire.h>
@@ -157,9 +153,8 @@ class Adafruit_STMPE610 {
 public:
   Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t misopin,
                     uint8_t clkpin);
-  Adafruit_STMPE610(uint8_t cs);
+  Adafruit_STMPE610(uint8_t cspin, SPIClass *theSPI = &SPI);
   Adafruit_STMPE610(TwoWire *theWire);
-  Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin, SPIClass *theSPI);
   Adafruit_STMPE610();
 
   boolean begin(uint8_t i2caddr = STMPE_ADDR);

@@ -52,16 +52,21 @@ Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin,
   _MOSI = mosipin;
   _MISO = misopin;
   _CLK = clkpin;
+
 }
 
 /*!
- *  @brief  Instantiates a new STMPE610 class using hardware SPI
+ *  @brief  Instantiates a new STMPE610 using provided SPI
  *  @param  cspin
  *          CS pin
+ *  @param  *theSPI
+ *          spi object
  */
-Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin) {
+Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, 
+                                     SPIClass *theSPI) {
   _CS = cspin;
   _MOSI = _MISO = _CLK = -1;
+  _spi = theSPI;
 }
 
 /*!
@@ -74,22 +79,6 @@ Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
   _wire = theWire;
 }
 
-/*!
- *  @brief  Instantiates a new STMPE610 using provided SPI
- *  @param  cspin
- *          CS pin
- *  @param  clkpin
- *          CLK pin
- *  @param  *theSPI
- *          spi object
- */
-Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t clkpin,
-                                     SPIClass *theSPI) {
-  _CS = cspin;
-  _CLK = clkpin;
-  _MOSI = _MISO = -1;
-  _spi = theSPI;
-}
 
 /*!
  *  @brief  Instantiates a new STMPE610 class
