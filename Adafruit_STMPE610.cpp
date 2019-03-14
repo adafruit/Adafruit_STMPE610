@@ -289,6 +289,15 @@ uint8_t Adafruit_STMPE610::readRegister8(uint8_t reg) {
   } else {
     if (_CLK == -1)
       _spi->beginTransaction(mySPISettings);
+
+    digitalWrite(_CS, LOW);
+    spiOut(0x80 | reg);
+    spiOut(0x00);
+    x = spiIn();
+    digitalWrite(_CS, HIGH);
+
+    if (_CLK == -1)
+      SPI.endTransaction();
   }
 
   return x;
