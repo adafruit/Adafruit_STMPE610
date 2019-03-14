@@ -17,3 +17,4 @@ Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 
 To install, use the Arduino Library Manager and search for "Adafruit STMPE610" and install the library.
+
