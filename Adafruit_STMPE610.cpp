@@ -76,6 +76,10 @@ Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
 
 /*!
  *  @brief  Instantiates a new STMPE610 using provided SPI
+ *  @param  cspin
+ *          CS pin
+ *  @param  clkpin
+ *          CLK pin
  *  @param  *theSPI
  *          spi object
  */
