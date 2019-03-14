@@ -36,57 +36,36 @@
 static SPISettings mySPISettings;
 
 /*!
- *  @brief  Instantiates a new STMPE610 class using bitbang SPI
+ *  @brief  Instantiates a new STMPE610 class using provided SPI
  *  @param  cspin
  *          CS pin
  *  @param  mosipin
- *          MOSI pin
+ *          MOSI pin (default to -1)
  *  @param  misopin
- *          MISO pin
+ *          MISO pin (default to -1)
  *  @param  clkpin
- *          CLK pin
+ *          CLK pin (default to -1)
+ *  @param  *theSPI
+ *          spi object
  */
 Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin,
-                                     uint8_t misopin, uint8_t clkpin) {
+                                     uint8_t misopin, uint8_t clkpin,
+                                     SPIClass *theSPI) {
   _CS = cspin;
   _MOSI = mosipin;
   _MISO = misopin;
   _CLK = clkpin;
-
-}
-
-/*!
- *  @brief  Instantiates a new STMPE610 using provided SPI
- *  @param  cspin
- *          CS pin
- *  @param  *theSPI
- *          spi object
- */
-Adafruit_STMPE610::Adafruit_STMPE610(uint8_t cspin, 
-                                     SPIClass *theSPI) {
-  _CS = cspin;
-  _MOSI = _MISO = _CLK = -1;
   _spi = theSPI;
 }
 
 /*!
- *  @brief  Instantiates a new STMPE610 using provided wire
+ *  @brief  Instantiates a new STMPE610 using provided Wire
  *  @param  *theWire
  *          wire object
  */
 Adafruit_STMPE610::Adafruit_STMPE610(TwoWire *theWire) {
   _CS = _MISO = _MOSI = _CLK = -1;
   _wire = theWire;
-}
-
-
-/*!
- *  @brief  Instantiates a new STMPE610 class
- */
-Adafruit_STMPE610::Adafruit_STMPE610() {
-  // use i2c
-  _CS = -1;
-  _wire = &Wire;
 }
 
 /*!

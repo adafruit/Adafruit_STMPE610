@@ -151,11 +151,9 @@ public:
  */
 class Adafruit_STMPE610 {
 public:
-  Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin, uint8_t misopin,
-                    uint8_t clkpin);
-  Adafruit_STMPE610(uint8_t cspin, SPIClass *theSPI = &SPI);
-  Adafruit_STMPE610(TwoWire *theWire);
-  Adafruit_STMPE610();
+  Adafruit_STMPE610(uint8_t cspin, uint8_t mosipin = -1, uint8_t misopin = -1,
+                    uint8_t clkpin = -1, SPIClass *theSPI = &SPI);
+  Adafruit_STMPE610(TwoWire *theWire = &Wire);
 
   boolean begin(uint8_t i2caddr = STMPE_ADDR);
 
